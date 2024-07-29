@@ -105,10 +105,107 @@
 							                </map>
 							            </div>
       				</font></div></td>
-
       				<td style="vertical-align: top;"><div align="left"><font color="white">
       				<iframe src="https://radar.weather.gov/region/northrockies/standard" width="650" height="650" frameborder="0" scrolling="yes"></iframe>
       				</font></div>
+      				</td>
+      				<td>
+      				<iframe><div class="div-full">
+    <div id="wx_map_border" style="margin-bottom-15px;min-height:450px;width:600px;padding:2px;"><div id="tabs" class="c-tabs" style="border: 1px solid rgb(0, 113, 188); margin-top: 5px; width: 775px;">
+        <div class="c-tabs-nav">
+                    </div>
+            </div>
+        <div id="wwamap">
+            <div id="wfomap_main" style="margin:10px 0px 0px 15px;">
+                <div id="wwamap_header">Click a location below for detailed forecast.</div>
+                                    <div id="wfomap_container">
+                        <form name="form1" method="get" action="https://forecast.weather.gov/MapClick.php">
+                            <input type="image" id="wwamapImage" src="https://www.weather.gov/wwamap/png/pih.png" align="middle" alt="Map of Forecast Area" title="Map of Forecast Area">
+                            <input type="hidden" name="site" value="pih">
+                            <input type="hidden" name="zmx" value=""><input type="hidden" name="zmy" value="">
+                            <input type="hidden" name="map_x" id="mapx" value="">
+                            <input type="hidden" name="map_y" id="mapy" value="">
+                        </form>
+                        <p id="wwamap_time_area">
+            Last Map Update:
+        Mon, Jul 29, 2024 at 1:40:20 pm MDT
+    </p>
+
+                    </div>
+                
+                <div id="wfomap_rtcol">
+                    <div id="wfomap_rtcol_top_lt">
+                        <a href="/wwamap/wwatxtget.php?cwa=pih&amp;wwa=all">Watches, Warnings &amp; Advisories</a>
+                    </div>
+                    <div id="wfomap_rtcol_top_rt">
+                        <div class="row">
+                            <div class="wwamap-arrow">
+    <a href="https://www.weather.gov/mso">    <img src="/bundles/templating/images/wwamap/nw.gif" alt="National Weather Service Missoula, MT" title="National Weather Service Missoula, MT">
+    </a></div>
+
+                            <div class="wwamap-arrow">
+    <a href="https://www.weather.gov/tfx">    <img src="/bundles/templating/images/wwamap/n.gif" alt="National Weather Service Great Falls, MT" title="National Weather Service Great Falls, MT">
+    </a></div>
+
+                            <div class="wwamap-arrow">
+    <a href="https://www.weather.gov/byz">    <img src="/bundles/templating/images/wwamap/ne.gif" alt="National Weather Service Billings, MT" title="National Weather Service Billings, MT">
+    </a></div>
+
+                        </div>
+                        <div class="row">
+                            <div class="wwamap-arrow">
+    <a href="https://www.weather.gov/boi">    <img src="/bundles/templating/images/wwamap/w.gif" alt="National Weather Service Boise, ID" title="National Weather Service Boise, ID">
+    </a></div>
+
+                            <div class="wwamap-zoom">
+                                <a href="https://forecast.weather.gov">Zoom Out</a>
+                            </div>
+                            <div class="wwamap-arrow">
+    <a href="https://www.weather.gov/riw">    <img src="/bundles/templating/images/wwamap/e.gif" alt="National Weather Service Western and Central Wyoming" title="National Weather Service Western and Central Wyoming">
+    </a></div>
+
+                        </div>
+                        <div class="row">
+                            <div class="wwamap-arrow">
+    <a href="https://www.weather.gov/lkn">    <img src="/bundles/templating/images/wwamap/sw.gif" alt="National Weather Service Elko, NV" title="National Weather Service Elko, NV">
+    </a></div>
+
+                            <div class="wwamap-arrow">
+    <a href="https://www.weather.gov/slc">    <img src="/bundles/templating/images/wwamap/s.gif" alt="National Weather Service Salt Lake City, UT" title="National Weather Service Salt Lake City, UT">
+    </a></div>
+
+                            <div class="wwamap-arrow">
+    <a href="https://www.weather.gov/gjt">    <img src="/bundles/templating/images/wwamap/se.gif" alt="National Weather Service Grand Junction, CO" title="National Weather Service Grand Junction, CO">
+    </a></div>
+
+                        </div>
+                    </div>
+                    <div id="wfomap_rtcol_bot">
+                                                                                    <div class="wwamap-legend-entry">
+                                    <a href="https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=PIH&amp;wwa=red flag warning">Red Flag Warning</a>
+                                    <div class="color">
+                                        <div class="wwamap-legend-color-swatch" style="background-color:#ff1493"></div>
+                                    </div>
+                                </div>
+                                                            <div class="wwamap-legend-entry">
+                                    <a href="https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=PIH&amp;wwa=air quality alert">Air Quality Alert</a>
+                                    <div class="color">
+                                        <div class="wwamap-legend-color-swatch" style="background-color:#808080"></div>
+                                    </div>
+                                </div>
+                                                            <div class="wwamap-legend-entry">
+                                    <a href="https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=PIH&amp;wwa=hazardous weather outlook">Hazardous Weather Outlook</a>
+                                    <div class="color">
+                                        <div class="wwamap-legend-color-swatch" style="background-color:#eee8aa"></div>
+                                    </div>
+                                </div>
+                                                                        </div>
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+        </div>
+    </div>
+</div></iframe>	
       				</td>
     			</tr>
   			</table>
