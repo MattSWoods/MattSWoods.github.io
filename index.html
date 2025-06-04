@@ -153,27 +153,30 @@
             box-shadow: 0 4px 15px rgba(100, 181, 246, 0.3);
         }
 
-        .weather-map-container {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
+        .weather-maps-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .weather-map-container img {
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .radar-container {
+        .forecast-map, .radar-map {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .radar-container iframe {
+        .map-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #64b5f6;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .forecast-map img, .radar-map iframe {
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
@@ -211,6 +214,10 @@
             
             .main-content {
                 order: 1;
+            }
+            
+            .weather-maps-container {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -365,19 +372,23 @@
                 <a href="https://www.weather.gov/" class="weather-link">US Weather</a>
             </div>
             
-            <div class="weather-map-container">
-                <form name="form1" method="get" action="https://forecast.weather.gov/MapClick.php">
-                    <input type="image" id="wwamapImage" src="https://www.weather.gov/wwamap/png/pih.png" align="middle" alt="Map of Forecast Area" title="Map of Forecast Area" style="max-width: 100%; height: auto;">
-                    <input type="hidden" name="site" value="pih">
-                    <input type="hidden" name="zmx" value="">
-                    <input type="hidden" name="zmy" value="">
-                    <input type="hidden" name="map_x" id="mapx" value="">
-                    <input type="hidden" name="map_y" id="mapy" value="">
-                </form>
-            </div>
-            
-            <div class="radar-container">
-                <iframe src="https://radar.weather.gov/region/northrockies/standard" width="100%" height="650" frameborder="0" scrolling="yes"></iframe>
+            <div class="weather-maps-container">
+                <div class="forecast-map">
+                    <h3 class="map-title">Forecast Area</h3>
+                    <form name="form1" method="get" action="https://forecast.weather.gov/MapClick.php">
+                        <input type="image" id="wwamapImage" src="https://www.weather.gov/wwamap/png/pih.png" align="middle" alt="Map of Forecast Area" title="Map of Forecast Area" style="max-width: 100%; height: auto;">
+                        <input type="hidden" name="site" value="pih">
+                        <input type="hidden" name="zmx" value="">
+                        <input type="hidden" name="zmy" value="">
+                        <input type="hidden" name="map_x" id="mapx" value="">
+                        <input type="hidden" name="map_y" id="mapy" value="">
+                    </form>
+                </div>
+                
+                <div class="radar-map">
+                    <h3 class="map-title">Radar Map</h3>
+                    <iframe src="https://radar.weather.gov/region/northrockies/standard" width="100%" height="450" frameborder="0" scrolling="yes"></iframe>
+                </div>
             </div>
         </div>
     </div>
