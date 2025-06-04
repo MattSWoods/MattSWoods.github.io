@@ -1,4 +1,17 @@
-<!DOCTYPE html>
+.link-item {
+                padding: 10px;
+            }
+            
+            .link-icon {
+                width: 50px;
+                height: 50px;
+            }        .market-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #81c784;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -121,12 +134,81 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .market-title {
-            font-size: 1.3em;
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .market-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .market-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(100, 181, 246, 0.3);
+        }
+
+        .market-symbol {
+            font-size: 0.9em;
             font-weight: 600;
+            color: #b0bec5;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .market-value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .market-change {
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .market-change.positive {
+            color: #4caf50;
+        }
+
+        .market-change.negative {
+            color: #f44336;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
             margin-bottom: 15px;
-            color: #81c784;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .market-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            color: #b0bec5;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+
+        .market-time {
+            font-style: italic;
+        }
+
+        .market-note {
+            font-weight: 500;
         }
 
         .weather-links {
@@ -226,13 +308,17 @@
                 flex-direction: column;
             }
             
-            .link-item {
-                padding: 10px;
+            .market-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 10px;
             }
             
-            .link-icon {
-                width: 50px;
-                height: 50px;
+            .market-card {
+                padding: 15px;
+            }
+            
+            .market-value {
+                font-size: 1.2em;
             }
             
             .ticker-container iframe {
@@ -392,5 +478,339 @@
             </div>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // Global variables
+        let miniCharts = {};
+        let mainChart = null;
+        
+        // Individual chart data for each symbol
+        const symbolData = {
+            djia: {
+                label: 'DJIA',
+                data: [0, 0.12, 0.28, 0.35, 0.42, 0.38, 0.31, 0.45, 0.52, 0.48, 0.55, 0.61, 0.58, 0.59],
+                color: '#64b5f6'
+            },
+            nasdaq: {
+                label: 'NASDAQ',
+                data: [0, 0.15, 0.32, 0.41, 0.48, 0.44, 0.38, 0.52, 0.61, 0.57, 0.64, 0.72, 0.67, 0.68],
+                color: '#81c784'
+            },
+            sp500: {
+                label: 'S&P 500',
+                data: [0, 0.08, 0.21, 0.29, 0.35, 0.32, 0.27, 0.39, 0.46, 0.43, 0.49, 0.58, 0.55, 0.57],
+                color: '#ffb74d'
+            },
+            russell: {
+                label: 'Russell 2000',
+                data: [0, -0.05, -0.12, -0.18, -0.25, -0.22, -0.18, -0.31, -0.38, -0.42, -0.48, -0.52, -0.58, -0.56],
+                color: '#f06292'
+            },
+            bond: {
+                label: '30Y Bond Yield',
+                data: [0, 0.02, 0.08, 0.15, 0.22, 0.18, 0.12, 0.28, 0.35, 0.41, 0.48, 0.52, 0.49, 0.54],
+                color: '#ba68c8'
+            }
+        };
+        
+        // Global function to toggle individual chart
+        window.toggleChart = function(symbol) {
+            console.log('toggleChart called for:', symbol); // Debug log
+            
+            const chartContainer = document.getElementById(symbol + '-chart');
+            const canvas = document.getElementById(symbol + '-canvas');
+            
+            if (!chartContainer || !canvas) {
+                console.error('Chart container or canvas not found for:', symbol);
+                return;
+            }
+            
+            if (chartContainer.style.display === 'none' || chartContainer.style.display === '') {
+                // Show chart
+                chartContainer.style.display = 'block';
+                
+                // Create mini chart if it doesn't exist
+                if (!miniCharts[symbol]) {
+                    const ctx = canvas.getContext('2d');
+                    const data = symbolData[symbol];
+                    
+                    miniCharts[symbol] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00'],
+                            datasets: [{
+                                label: data.label,
+                                data: data.data,
+                                borderColor: data.color,
+                                backgroundColor: data.color + '20',
+                                tension: 0.3,
+                                pointRadius: 2,
+                                pointHoverRadius: 4,
+                                borderWidth: 2,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#ffffff',
+                                    borderColor: data.color,
+                                    borderWidth: 1,
+                                    callbacks: {
+                                        label: function(context) {
+                                            const value = context.parsed.y;
+                                            const sign = value >= 0 ? '+' : '';
+                                            return sign + value.toFixed(2) + '%';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    display: true,
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    },
+                                    ticks: {
+                                        color: '#b0bec5',
+                                        font: {
+                                            size: 10
+                                        },
+                                        maxTicksLimit: 6
+                                    }
+                                },
+                                y: {
+                                    display: true,
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    },
+                                    ticks: {
+                                        color: '#b0bec5',
+                                        font: {
+                                            size: 10
+                                        },
+                                        callback: function(value) {
+                                            const sign = value >= 0 ? '+' : '';
+                                            return sign + value.toFixed(1) + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                // Hide chart
+                chartContainer.style.display = 'none';
+            }
+        };
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the main market chart
+            const ctx = document.getElementById('marketChart').getContext('2d');
+        
+        // Today's intraday performance data (percentage change from market open)
+        const chartData = {
+            labels: ['9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', 
+                    '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', 
+                    '3:30 PM', '4:00 PM'],
+            datasets: [
+                {
+                    label: 'DJIA',
+                    data: [0, 0.12, 0.28, 0.35, 0.42, 0.38, 0.31, 0.45, 0.52, 0.48, 0.55, 0.61, 0.58, 0.59],
+                    borderColor: '#64b5f6',
+                    backgroundColor: 'rgba(100, 181, 246, 0.1)',
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'NASDAQ',
+                    data: [0, 0.15, 0.32, 0.41, 0.48, 0.44, 0.38, 0.52, 0.61, 0.57, 0.64, 0.72, 0.67, 0.68],
+                    borderColor: '#81c784',
+                    backgroundColor: 'rgba(129, 199, 132, 0.1)',
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'S&P 500',
+                    data: [0, 0.08, 0.21, 0.29, 0.35, 0.32, 0.27, 0.39, 0.46, 0.43, 0.49, 0.58, 0.55, 0.57],
+                    borderColor: '#ffb74d',
+                    backgroundColor: 'rgba(255, 183, 77, 0.1)',
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Russell 2000',
+                    data: [0, -0.05, -0.12, -0.18, -0.25, -0.22, -0.18, -0.31, -0.38, -0.42, -0.48, -0.52, -0.58, -0.56],
+                    borderColor: '#f06292',
+                    backgroundColor: 'rgba(240, 98, 146, 0.1)',
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: '30Y Bond Yield',
+                    data: [0, 0.02, 0.08, 0.15, 0.22, 0.18, 0.12, 0.28, 0.35, 0.41, 0.48, 0.52, 0.49, 0.54],
+                    borderColor: '#ba68c8',
+                    backgroundColor: 'rgba(186, 104, 200, 0.1)',
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }
+            ]
+        };
+        
+        const chartConfig = {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#ffffff',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                const value = context.parsed.y;
+                                const sign = value >= 0 ? '+' : '';
+                                label += sign + value.toFixed(2) + '%';
+                                return label;
+                            },
+                            title: function(context) {
+                                return 'Time: ' + context[0].label;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: "Today's Intraday Performance (% Change from Open)",
+                        color: '#ffffff',
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        padding: {
+                            bottom: 20
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#b0bec5',
+                            maxTicksLimit: 8
+                        },
+                        title: {
+                            display: true,
+                            text: 'Trading Hours (ET)',
+                            color: '#b0bec5',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#b0bec5',
+                            callback: function(value) {
+                                const sign = value >= 0 ? '+' : '';
+                                return sign + value.toFixed(1) + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Percentage Change (%)',
+                            color: '#b0bec5',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        };
+        
+        new Chart(ctx, chartConfig);
+        
+        // Function to simulate real-time updates
+        function updateIntradayData() {
+            const chart = Chart.getChart('marketChart');
+            if (chart) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+                
+                // Simulate small random movements
+                chart.data.datasets.forEach((dataset, index) => {
+                    const lastValue = dataset.data[dataset.data.length - 1];
+                    const randomChange = (Math.random() - 0.5) * 0.1; // ±0.05% random movement
+                    const newValue = Math.max(-2, Math.min(2, lastValue + randomChange)); // Keep within ±2%
+                    
+                    // Add new data point (simulate every 30 minutes)
+                    if (dataset.data.length < 20) {
+                        dataset.data.push(newValue);
+                        if (index === 0) { // Only add time label once
+                            chart.data.labels.push(timeString);
+                        }
+                    } else {
+                        // Replace the last data point to simulate current moment
+                        dataset.data[dataset.data.length - 1] = newValue;
+                        chart.data.labels[chart.data.labels.length - 1] = timeString;
+                    }
+                });
+                
+                chart.update('none'); // Update without animation for real-time feel
+            }
+            
+            // Update the timestamp
+            document.getElementById('last-update').textContent = now.toLocaleString();
+        }
+        
+        // Update every 30 seconds for demo purposes (real systems might update every few seconds)
+        setInterval(updateIntradayData, 30000);
 </body>
 </html>
