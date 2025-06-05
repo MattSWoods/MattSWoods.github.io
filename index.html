@@ -299,6 +299,26 @@
     <div class="container">
         <div class="sidebar">
             <h2 class="section-title">Helpful Links</h2>
+            
+            <!-- Market Summary moved to sidebar -->
+            <div class="market-section" style="margin-bottom: 25px;">
+                <h3 class="market-title">Market Summary</h3>
+                <div style="text-align: center;">
+                    <img alt="Today's Session" src="https://api.wsj.net/api/kaavio/charts/gifquotes/markets.gifquote?rand=1437536735" usemap="#markets" style="border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); max-width: 100%; height: auto;"/>
+                    <map name="markets">
+                        <area shape="rect" coords="1,1,207,178" href="https://bigcharts.marketwatch.com/advchart/frames/frames.asp?symb=djia&amp;time=1&amp;freq=9&amp;comp=SP500%2CNASDAQ&amp;ma=0&amp;lf=1&amp;type=2">
+                        <area shape="rect" coords="2,178,50,193" href="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=djia">
+                        <area SHAPE="rect" COORDS="50,178,119,193" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=nasdaq">
+                        <area SHAPE="rect" COORDS="120,178,177,193" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=sp500">
+                        <area SHAPE="rect" COORDS="0,197,36,215" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=djia">
+                        <area SHAPE="rect" COORDS="0,217,55,235" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=nasdaq">
+                        <area SHAPE="rect" COORDS="0,237,54,255" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=sp500">
+                        <area SHAPE="rect" COORDS="0,257,86,275" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=rut">
+                        <area SHAPE="rect" COORDS="0,277,76,295" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=tyx">
+                    </map>
+                </div>
+            </div>
+            
             <div class="links-grid">
                 <a href="https://forecast.weather.gov/MapClick.php?lon=-112.44963169052123&lat=42.92016639340207" class="link-item">
                     <img src="Poc_Weather1.png" alt="Weather" class="link-icon">
@@ -395,30 +415,10 @@
         </div>
         
         <div class="main-content">
-            <div class="market-news-container">
-                <div class="market-section">
-                    <h3 class="market-title">Market Summary</h3>
-                    <div style="text-align: center;">
-                        <img alt="Today's Session" src="https://api.wsj.net/api/kaavio/charts/gifquotes/markets.gifquote?rand=1437536735" usemap="#markets" style="border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);"/>
-                        <map name="markets">
-                            <area shape="rect" coords="1,1,207,178" href="https://bigcharts.marketwatch.com/advchart/frames/frames.asp?symb=djia&amp;time=1&amp;freq=9&amp;comp=SP500%2CNASDAQ&amp;ma=0&amp;lf=1&amp;type=2">
-                            <area shape="rect" coords="2,178,50,193" href="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=djia">
-                            <area SHAPE="rect" COORDS="50,178,119,193" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=nasdaq">
-                            <area SHAPE="rect" COORDS="120,178,177,193" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=sp500">
-                            <area SHAPE="rect" COORDS="0,197,36,215" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=djia">
-                            <area SHAPE="rect" COORDS="0,217,55,235" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=nasdaq">
-                            <area SHAPE="rect" COORDS="0,237,54,255" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=sp500">
-                            <area SHAPE="rect" COORDS="0,257,86,275" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=rut">
-                            <area SHAPE="rect" COORDS="0,277,76,295" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=tyx">
-                        </map>
-                    </div>
-                </div>
-                
-                <div class="news-section">
-                    <h3 class="news-title">Live News Feed</h3>
-                    <div class="news-container">
-                        <iframe width="100%" height="600" src="https://rss.app/embed/v1/magazine/_akPGgAD5M25gxgc9" frameborder="0"></iframe>
-                    </div>
+            <div class="news-section" style="margin-bottom: 25px;">
+                <h3 class="news-title">Live News Feed</h3>
+                <div class="news-container">
+                    <iframe width="100%" height="600" src="https://rss.app/embed/v1/magazine/_akPGgAD5M25gxgc9" frameborder="0"></iframe>
                 </div>
             </div>
             
