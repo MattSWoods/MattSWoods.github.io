@@ -3,12 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Personal dashboard featuring live weather, market data, news feeds, and environmental monitoring for the Pocatello region and beyond.">
+    <meta property="og:title" content="Matt's Dashboard">
+    <meta property="og:description" content="Personal dashboard with weather, market data, and news feeds.">
+    <meta property="og:type" content="website">
     <title>Matt's Dashboard</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
@@ -33,10 +41,13 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            height: 60px;
         }
 
         .ticker-section iframe {
             border-radius: 8px;
+            height: 60px !important;
+            display: block;
         }
 
         .container {
@@ -99,6 +110,11 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(100, 181, 246, 0.3);
             border-color: rgba(100, 181, 246, 0.5);
+        }
+
+        .link-item:focus {
+            outline: 2px solid #64b5f6;
+            outline-offset: 2px;
         }
 
         .link-icon {
@@ -211,6 +227,11 @@
             box-shadow: 0 4px 15px rgba(100, 181, 246, 0.3);
         }
 
+        .weather-link:focus {
+            outline: 2px solid #64b5f6;
+            outline-offset: 2px;
+        }
+
         .weather-maps-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -237,6 +258,48 @@
         .forecast-map img, .radar-map iframe {
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        iframe {
+            background: rgba(255, 255, 255, 0.05);
+            min-height: 100px;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(100, 181, 246, 0.9);
+            color: #ffffff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1000;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: rgba(100, 181, 246, 1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(100, 181, 246, 0.4);
+        }
+
+        .back-to-top:focus {
+            outline: 2px solid #ffffff;
+            outline-offset: 2px;
         }
 
         @media (max-width: 1200px) {
@@ -291,10 +354,10 @@
     <!-- Top ticker sections spanning full width -->
     <div class="ticker-top-container">
         <div class="ticker-section">
-            <iframe width="100%" height="60" src="https://rss.app/embed/v1/ticker/t8ooplagDkQftUjr" frameborder="0"></iframe>
+            <iframe width="100%" height="60" src="https://rss.app/embed/v1/ticker/t8ooplagDkQftUjr" frameborder="0" title="Market Ticker Feed" loading="lazy"></iframe>
         </div>
         <div class="ticker-section">
-            <iframe width="100%" height="60" src="https://rss.app/embed/v1/ticker/tqQRHYQNDnTRmNOk" frameborder="0"></iframe>
+            <iframe width="100%" height="60" src="https://rss.app/embed/v1/ticker/tqQRHYQNDnTRmNOk" frameborder="0" title="News Ticker Feed" loading="lazy"></iframe>
         </div>
     </div>
 
@@ -304,17 +367,17 @@
             <div class="market-section" style="margin-bottom: 25px;">
                 <h3 class="market-title">Market Summary</h3>
                 <div style="text-align: center;">
-                    <img alt="Today's Session" src="https://api.wsj.net/api/kaavio/charts/gifquotes/markets.gifquote?rand=1437536735" usemap="#markets" style="border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); max-width: 100%; height: auto;"/>
+                    <img alt="Today's Market Session - DJIA, NASDAQ, and S&P 500 performance" src="https://api.wsj.net/api/kaavio/charts/gifquotes/markets.gifquote?rand=1437536735" usemap="#markets" style="border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); max-width: 100%; height: auto;"/>
                     <map name="markets">
-                        <area shape="rect" coords="1,1,207,178" href="https://bigcharts.marketwatch.com/advchart/frames/frames.asp?symb=djia&amp;time=1&amp;freq=9&amp;comp=SP500%2CNASDAQ&amp;ma=0&amp;lf=1&amp;type=2">
-                        <area shape="rect" coords="2,178,50,193" href="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=djia">
-                        <area SHAPE="rect" COORDS="50,178,119,193" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=nasdaq">
-                        <area SHAPE="rect" COORDS="120,178,177,193" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=sp500">
-                        <area SHAPE="rect" COORDS="0,197,36,215" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=djia">
-                        <area SHAPE="rect" COORDS="0,217,55,235" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=nasdaq">
-                        <area SHAPE="rect" COORDS="0,237,54,255" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=sp500">
-                        <area SHAPE="rect" COORDS="0,257,86,275" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=rut">
-                        <area SHAPE="rect" COORDS="0,277,76,295" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=tyx">
+                        <area shape="rect" coords="1,1,207,178" href="https://bigcharts.marketwatch.com/advchart/frames/frames.asp?symb=djia&amp;time=1&amp;freq=9&amp;comp=SP500%2CNASDAQ&amp;ma=0&amp;lf=1&amp;type=2" alt="Advanced Chart - DJIA, NASDAQ, S&P 500">
+                        <area shape="rect" coords="2,178,50,193" href="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=djia" alt="DJIA Quick Chart">
+                        <area SHAPE="rect" COORDS="50,178,119,193" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=nasdaq" alt="NASDAQ Quick Chart">
+                        <area SHAPE="rect" COORDS="120,178,177,193" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=sp500" alt="S&P 500 Quick Chart">
+                        <area SHAPE="rect" COORDS="0,197,36,215" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=djia" alt="Dow Jones Industrial Average">
+                        <area SHAPE="rect" COORDS="0,217,55,235" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=nasdaq" alt="NASDAQ Composite">
+                        <area SHAPE="rect" COORDS="0,237,54,255" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=sp500" alt="S&P 500 Index">
+                        <area SHAPE="rect" COORDS="0,257,86,275" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=rut" alt="Russell 2000 Index">
+                        <area SHAPE="rect" COORDS="0,277,76,295" HREF="https://bigcharts.marketwatch.com/quickchart/quickchart.asp?symb=tyx" alt="30-Year Treasury Yield">
                     </map>
                 </div>
             </div>
@@ -338,6 +401,11 @@
                 <a href="https://rammb-slider.cira.colostate.edu/?sat=goes-18&sec=conus&x=8488&y=2992&z=4&angle=0&im=12&ts=1&st=0&et=0&speed=130&motion=loop&maps%5Bborders%5D=white&p%5B0%5D=geocolor&opacity%5B0%5D=1&pause=0&slider=-1&hide_controls=0&mouse_draw=0&follow_feature=0&follow_hide=0&s=rammb-slider&draw_color=FFD700&draw_width=6" class="link-item">
                     <img src="ColSat.png" alt="Satellite" class="link-icon">
                     <div class="link-text">Colorado State - Southern Idaho Satellite Images</div>
+                </a>
+                
+                <a href="https://www.ventusky.com/#p=42.8;-112.3;5" class="link-item">
+                    <img src="Ventusky.png" alt="Ventusky Weather" class="link-icon">
+                    <div class="link-text">Ventusky - Interactive Weather Map</div>
                 </a>
                                 
                 <a href="https://www.woweather.com/cgi-bin/expertcharts?LANG=us&MENU=0000000000&CONT=usus&MODELL=gfs&MODELLTYP=1&BASE=-&VAR=pslv&HH=3&ZOOM=0&ARCHIV=0&RES=0&WMO=&PERIOD=" class="link-item">
@@ -433,7 +501,7 @@
             <div class="news-section" style="margin-bottom: 25px;">
                 <h3 class="news-title">Live News Feed</h3>
                 <div class="news-container">
-                    <iframe width="100%" height="1600" src="https://rss.app/embed/v1/list/_akPGgAD5M25gxgc9" frameborder="0"></iframe>
+                    <iframe width="100%" height="1600" src="https://rss.app/embed/v1/list/_akPGgAD5M25gxgc9" frameborder="0" title="Live RSS News Feed" loading="lazy"></iframe>
                 </div>
             </div>
             
@@ -457,10 +525,34 @@
                 
                 <div class="radar-map">
                     <h3 class="map-title">Radar Map</h3>
-                    <iframe src="https://radar.weather.gov/region/northrockies/standard" width="100%" height="450" frameborder="0" scrolling="yes"></iframe>
+                    <iframe src="https://radar.weather.gov/region/northrockies/standard" width="100%" height="450" frameborder="0" scrolling="yes" title="North Rockies Weather Radar" loading="lazy"></iframe>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Back to top button -->
+    <a href="#" class="back-to-top" id="backToTop" aria-label="Back to top">↑</a>
+
+    <script>
+        // Back to top button functionality
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.add('visible');
+            } else {
+                backToTopButton.classList.remove('visible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
 </body>
 </html>
