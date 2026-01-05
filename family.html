@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Family dashboard featuring calendar, shopping lists, personal planning, and quick access to frequently used resources.">
+    <meta property="og:title" content="Family Dashboard">
+    <meta property="og:description" content="Personal family dashboard with calendar, lists, and planning tools.">
+    <meta property="og:type" content="website">
+    <title>Family Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+
+        .ticker-top-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ticker-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            height: 60px;
+        }
+
+        .ticker-section iframe {
+            border-radius: 8px;
+            height: 60px !important;
+            display: block;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: calc(100vh - 140px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            height: fit-content;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #64b5f6;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid rgba(100, 181, 246, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .links-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .link-item:hover {
+            background: rgba(100, 181, 246, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(100, 181, 246, 0.3);
+            border-color: rgba(100, 181, 246, 0.5);
+        }
+
+        .link-item:focus {
+            outline: 2px solid #64b5f6;
+            outline-offset: 2px;
+        }
+
+        .link-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .link-item:hover .link-icon {
+            border-color: rgba(100, 181, 246, 0.8);
+            box-shadow: 0 4px 15px rgba(100, 181, 246, 0.4);
+        }
+
+        .link-text {
+            font-size: 0.95em;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        .personal-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .personal-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ce93d8;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .personal-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .personal-container iframe {
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            max-width: 100%;
+        }
+
+        .dual-column-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        iframe {
+            background: rgba(255, 255, 255, 0.05);
+            min-height: 100px;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(100, 181, 246, 0.9);
+            color: #ffffff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1000;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: rgba(100, 181, 246, 1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(100, 181, 246, 0.4);
+        }
+
+        .back-to-top:focus {
+            outline: 2px solid #ffffff;
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+            }
+            
+            .dual-column-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ticker-top-container {
+                padding: 10px 15px;
+            }
+            
+            .link-item {
+                padding: 10px;
+            }
+            
+            .link-icon {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .ticker-section iframe {
+                height: 50px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top ticker sections spanning full width -->
+    <div class="ticker-top-container">
+        <div class="ticker-section">
+            <iframe width="100%" height="60" src="https://rss.app/embed/v1/ticker/t8ooplagDkQftUjr" frameborder="0" title="Market Ticker Feed" loading="lazy"></iframe>
+        </div>
+        <div class="ticker-section">
+            <iframe width="100%" height="60" src="https://rss.app/embed/v1/ticker/tqQRHYQNDnTRmNOk" frameborder="0" title="News Ticker Feed" loading="lazy"></iframe>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h2 class="section-title">Quick Links</h2>
+            <div class="links-grid">
+                <a href="https://keep.google.com/#LIST/1yek3Rq8I-efH6CyGGIC-DDzKnQGCnhHKY6laF9TfvhJ0xhhd7MXesv3W2gUNH8_3kPIp" target="_blank" class="link-item">
+                    <div class="link-text">📝 Shopping List (Google Keep)</div>
+                </a>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 30px;">Weather Station</h2>
+            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden;">
+                <iframe width="100%" height="600" src="https://tempestwx.com/station/124635/grid" frameborder="0" title="Tempest Weather Station" loading="lazy" style="border-radius: 8px;"></iframe>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Calendar Section -->
+            <div class="personal-section">
+                <h3 class="personal-title">Family Calendar</h3>
+                <div class="personal-container">
+                    <iframe width="100%" height="600" src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FDenver&showPrint=0&src=bmVvLm1yYW5kZXJzb24udXNAZ21haWwuY29t&src=OWVpcDlvNWg3YWMyZjduZmkyZXRpNnFiNGtAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=ZGoxZ2M1b3M2b2FjcWxsazIyYmNwbzh0NGdAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=ZDhma2dnaXBuZGNmZjBxOTduajEwNGt0MWNAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=bmlja2kubW53b29kc0BnbWFpbC5jb20&src=ZmFtaWx5MDIzODA3MDc2Mzg3MjU3ODI4NzlAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039be5&color=%239e69af&color=%23e67c73&color=%23616161&color=%238e24aa&color=%234285f4&color=%23009688" frameborder="0" title="Family Calendar" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to top button -->
+    <a href="#" class="back-to-top" id="backToTop" aria-label="Back to top">↑</a>
+
+    <script>
+        // Back to top button functionality
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.add('visible');
+            } else {
+                backToTopButton.classList.remove('visible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>
