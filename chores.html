@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .page-wrap {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 20px 20px 60px;
+        }
+
+        /* ── Header ──────────────────────────────────────────── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            margin-bottom: 22px;
+        }
+
+        .back-link {
+            color: rgba(255,255,255,0.35);
+            text-decoration: none;
+            font-size: 0.85em;
+            transition: color 0.2s;
+            min-width: 80px;
+        }
+        .back-link:hover { color: #64b5f6; }
+
+        .header-center h1 {
+            font-size: 1.75em;
+            font-weight: 700;
+            color: #64b5f6;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(100,181,246,0.3);
+        }
+
+        .week-badge {
+            text-align: center;
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.35);
+            margin-top: 5px;
+            letter-spacing: 0.02em;
+        }
+
+        .header-right { min-width: 80px; }
+
+        /* ── Names bar ───────────────────────────────────────── */
+        .names-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .name-chip {
+            font-size: 1em;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 2px solid;
+            cursor: pointer;
+            background: transparent;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .name-chip-0 { color: #64b5f6; border-color: rgba(100,181,246,0.35); }
+        .name-chip-0:hover { background: rgba(100,181,246,0.1); }
+        .name-chip-1 { color: #81c784; border-color: rgba(129,199,132,0.35); }
+        .name-chip-1:hover { background: rgba(129,199,132,0.1); }
+
+        .vs-sep { color: rgba(255,255,255,0.2); font-size: 0.8em; font-weight: 300; }
+
+        /* ── Card ────────────────────────────────────────────── */
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.09);
+            padding: 22px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            margin-bottom: 18px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: #64b5f6;
+            text-shadow: 0 1px 4px rgba(100,181,246,0.2);
+        }
+        .card-title-amber { color: #ffb74d; text-shadow: 0 1px 4px rgba(255,183,77,0.2); }
+        .card-title-green { color: #81c784; text-shadow: 0 1px 4px rgba(129,199,132,0.2); }
+
+        /* ── Daily ───────────────────────────────────────────── */
+        .daily-owner {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .daily-owner-name {
+            font-size: 1.35em;
+            font-weight: 700;
+        }
+        .daily-owner-0 { color: #64b5f6; }
+        .daily-owner-1 { color: #81c784; }
+        .daily-owner-suffix { font-size: 0.82em; color: rgba(255,255,255,0.3); }
+
+        .daily-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 18px;
+        }
+
+        /* ── Task items ──────────────────────────────────────── */
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .task-item input[type="checkbox"] {
+            accent-color: #64b5f6;
+            width: 13px;
+            height: 13px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-label {
+            font-size: 0.83em;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.3;
+            transition: all 0.15s;
+        }
+
+        .task-item.done .task-label {
+            color: rgba(255,255,255,0.28);
+            text-decoration: line-through;
+        }
+
+        /* ── Progress ────────────────────────────────────────── */
+        .progress-bar {
+            background: rgba(255,255,255,0.07);
+            border-radius: 3px;
+            height: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            font-size: 0.72em;
+            color: rgba(255,255,255,0.3);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* ── Weekly columns ──────────────────────────────────── */
+        .weekly-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .person-col-title {
+            font-size: 0.95em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .col-title-0 { color: #64b5f6; }
+        .col-title-1 { color: #81c784; }
+
+        /* ── Room cards ──────────────────────────────────────── */
+        .room-card {
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 11px;
+            padding: 13px;
+            margin-bottom: 9px;
+        }
+
+        .room-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 9px;
+        }
+
+        .room-name {
+            font-size: 0.88em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn {
+            padding: 6px 13px;
+            border-radius: 7px;
+            border: 1px solid;
+            cursor: pointer;
+            font-size: 0.75em;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .btn-ghost {
+            color: rgba(255,255,255,0.38);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .btn-ghost:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.28); }
+
+        .btn-blue {
+            color: #64b5f6;
+            border-color: rgba(100,181,246,0.28);
+        }
+        .btn-blue:hover { background: rgba(100,181,246,0.1); }
+
+        .btn-amber {
+            color: #ffb74d;
+            border-color: rgba(255,183,77,0.28);
+        }
+        .btn-amber:hover { background: rgba(255,183,77,0.08); }
+
+        .btn-danger {
+            color: #ef5350;
+            border-color: rgba(239,83,80,0.22);
+        }
+        .btn-danger:hover { background: rgba(239,83,80,0.08); }
+
+        /* ── Deep clean ──────────────────────────────────────── */
+        .deep-clean-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .deep-clean-row input[type="checkbox"] {
+            accent-color: #ffb74d;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .deep-clean-name {
+            font-size: 1.05em;
+            font-weight: 600;
+            color: #ffb74d;
+            line-height: 1.3;
+        }
+
+        .deep-clean-cat {
+            font-size: 0.78em;
+            color: rgba(255,255,255,0.35);
+            margin-top: 3px;
+        }
+
+        /* ── Summary ─────────────────────────────────────────── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .summary-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .summary-name {
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 6px;
+        }
+
+        .summary-pct {
+            font-size: 2.1em;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .summary-sub {
+            font-size: 0.75em;
+            color: rgba(255,255,255,0.3);
+            margin-top: 3px;
+        }
+
+        /* ── Sync ────────────────────────────────────────────── */
+        .sync-section {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 6px;
+        }
+
+        .sync-label {
+            font-size: 0.72em;
+            color: rgba(255,255,255,0.25);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .sync-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .sync-input {
+            flex: 1;
+            min-width: 160px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 7px;
+            padding: 7px 11px;
+            color: rgba(255,255,255,0.65);
+            font-size: 0.78em;
+            font-family: 'Courier New', monospace;
+        }
+
+        .sync-input:focus {
+            outline: none;
+            border-color: rgba(100,181,246,0.35);
+        }
+
+        .sync-hint {
+            font-size: 0.72em;
+            color: rgba(255,255,255,0.2);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        /* ── Toast ───────────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(14px);
+            background: rgba(100,181,246,0.92);
+            color: #000e1a;
+            padding: 9px 20px;
+            border-radius: 18px;
+            font-size: 0.83em;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            pointer-events: none;
+            z-index: 9999;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ── Responsive ──────────────────────────────────────── */
+        @media (max-width: 680px) {
+            .weekly-columns,
+            .daily-grid,
+            .summary-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.4em; }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <!-- Header -->
+    <div class="page-header">
+        <a href="index.html" class="back-link">← Dashboard</a>
+        <div class="header-center">
+            <h1>Home Tracker</h1>
+            <div class="week-badge" id="weekBadge"></div>
+        </div>
+        <div class="header-right"></div>
+    </div>
+
+    <!-- Names -->
+    <div class="names-bar">
+        <button class="name-chip name-chip-0" id="nameBtn0" onclick="editName(0)"></button>
+        <span class="vs-sep">vs</span>
+        <button class="name-chip name-chip-1" id="nameBtn1" onclick="editName(1)"></button>
+    </div>
+
+    <!-- Daily tasks -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Today's Daily Tasks</span>
+            <button class="btn btn-ghost" onclick="swapDailyPerson()">Swap Today ↔</button>
+        </div>
+        <div class="daily-owner">
+            <span id="dailyOwnerName" class="daily-owner-name daily-owner-0"></span>
+            <span class="daily-owner-suffix">is on duty today</span>
+        </div>
+        <div class="daily-grid" id="dailyGrid"></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="dailyProgressFill" style="background:#64b5f6"></div>
+        </div>
+        <div class="progress-text" id="dailyProgressText"></div>
+    </div>
+
+    <!-- Weekly rooms -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">This Week's Rooms</span>
+            <button class="btn btn-ghost" onclick="flipRotation()" title="Permanently swap who gets which rooms each week">Flip Rotation ↺</button>
+        </div>
+        <div class="weekly-columns" id="weeklyColumns"></div>
+    </div>
+
+    <!-- Deep clean -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title card-title-amber">Deep Clean — This Week</span>
+            <button class="btn btn-amber" onclick="nextDeepClean()">Next Task →</button>
+        </div>
+        <div class="deep-clean-row">
+            <input type="checkbox" id="deepCleanCheck" onchange="toggleDeepClean()">
+            <div>
+                <div class="deep-clean-name" id="deepCleanName"></div>
+                <div class="deep-clean-cat" id="deepCleanCat"></div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="deepCleanFill" style="background:#ffb74d"></div>
+        </div>
+        <div class="progress-text" id="deepCleanText"></div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title card-title-green">Week Summary</span>
+            <button class="btn btn-danger" onclick="resetWeek()">Reset Week ✕</button>
+        </div>
+        <div class="summary-grid" id="summaryGrid"></div>
+    </div>
+
+    <!-- Cross-device sync -->
+    <div class="sync-section">
+        <div class="sync-label">Cross-device sync</div>
+        <div class="sync-row">
+            <button class="btn btn-blue" onclick="exportState()">Copy State Code</button>
+            <input type="text" class="sync-input" id="syncInput" placeholder="Paste state code to import…">
+            <button class="btn btn-blue" onclick="importState()">Import</button>
+        </div>
+        <div class="sync-hint">
+            Export on one device → paste into the other to stay in sync.
+            State is stored locally in this browser.
+        </div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Static chore data ────────────────────────────────────────────────────────
+
+const ROOMS = [
+    { id:'kitchen',      icon:'🍳', name:'Kitchen',
+      tasks:[{id:'k1',label:'Sweep & mop floor'},{id:'k2',label:'Wipe cabinet fronts'},
+             {id:'k3',label:'Wipe out microwave'},{id:'k4',label:'Empty trash'}] },
+
+    { id:'guestBath',    icon:'🚿', name:'Guest Bathroom',
+      tasks:[{id:'gb1',label:'Clean toilet'},{id:'gb2',label:'Scrub sink & vanity'},
+             {id:'gb3',label:'Wipe mirror'},{id:'gb4',label:'Sweep & mop floor'},
+             {id:'gb5',label:'Wipe shower / tub'}] },
+
+    { id:'mainBath',     icon:'🛁', name:'Main Bathroom',
+      tasks:[{id:'mb1',label:'Clean toilet'},{id:'mb2',label:'Scrub sinks & vanity'},
+             {id:'mb3',label:'Wipe mirrors'},{id:'mb4',label:'Sweep & mop floor'},
+             {id:'mb5',label:'Wipe shower / tub'}] },
+
+    { id:'livingDining', icon:'🛋️', name:'Living & Dining',
+      tasks:[{id:'ld1',label:'Vacuum furniture'},{id:'ld2',label:'Vacuum / sweep floors'},
+             {id:'ld3',label:'Wipe surfaces & table'},{id:'ld4',label:'Dust flat surfaces'}] },
+
+    { id:'familyRoom',   icon:'📺', name:'Family Room',
+      tasks:[{id:'fr1',label:'Vacuum floors & furniture'},{id:'fr2',label:'Wipe hard surfaces'},
+             {id:'fr3',label:'Spot tidy'}] },
+
+    { id:'offices',      icon:'💻', name:'Home Offices (both)',
+      tasks:[{id:'o1',label:'Vacuum / sweep floors'},{id:'o2',label:'Wipe desks & surfaces'},
+             {id:'o3',label:'Empty trash'}] },
+
+    { id:'mainBedroom',  icon:'🛏️', name:'Main Bedroom',
+      tasks:[{id:'bed1',label:'Change sheets (every 1–2 wks)'},{id:'bed2',label:'Vacuum floor'},
+             {id:'bed3',label:'Wipe nightstands'}] },
+
+    { id:'guestStorage', icon:'🗃️', name:'Guest / Storage / Utility',
+      tasks:[{id:'gs1',label:'Quick vacuum as needed'}] },
+];
+
+const DAILY_TASKS = [
+    {id:'d1',label:'Wipe counters & stovetop'},
+    {id:'d2',label:'Dishes / dishwasher'},
+    {id:'d3',label:'Wipe kitchen sink'},
+    {id:'d4',label:'Spot-tidy surfaces'},
+    {id:'d5',label:'Clear table after meals'},
+    {id:'d6',label:'Wipe bathroom sink(s)'},
+    {id:'d7',label:'Toilet swish'},
+    {id:'d8',label:'Put things back in place'},
+    {id:'d9',label:'Tidy entryways'},
+];
+
+const DEEP_CLEAN = [
+    {label:'Inside of oven',                 cat:'Kitchen'},
+    {label:'Range hood & filter',            cat:'Kitchen'},
+    {label:'Inside of fridge',               cat:'Kitchen'},
+    {label:'Inside cabinets & pantry',       cat:'Kitchen'},
+    {label:'Behind / under appliances',      cat:'Kitchen'},
+    {label:'Descale coffee maker',           cat:'Kitchen'},
+    {label:'Scrub grout',                    cat:'Bathrooms'},
+    {label:'Descale shower head',            cat:'Bathrooms'},
+    {label:'Wipe baseboards (bathrooms)',    cat:'Bathrooms'},
+    {label:'Wash bath mats',                 cat:'Bathrooms'},
+    {label:'Deep clean toilet tank',         cat:'Bathrooms'},
+    {label:'Clean exhaust fan cover',        cat:'Bathrooms'},
+    {label:'Inside window glass',            cat:'Windows & Glass'},
+    {label:'Window sills & tracks',          cat:'Windows & Glass'},
+    {label:'Sliding door tracks',            cat:'Windows & Glass'},
+    {label:'Full mirror wipe-down',          cat:'Windows & Glass'},
+    {label:'Baseboards throughout',          cat:'Whole House'},
+    {label:'Ceiling fans',                   cat:'Whole House'},
+    {label:'Light switches & door handles',  cat:'Whole House'},
+    {label:'Vents & returns',                cat:'Whole House'},
+    {label:'Door frames & molding',          cat:'Whole House'},
+    {label:'Behind & under furniture',       cat:'Whole House'},
+    {label:'Wash pillows & duvet inserts',   cat:'Bedrooms'},
+    {label:'Rotate / flip mattress',         cat:'Bedrooms'},
+    {label:'Vacuum under bed',               cat:'Bedrooms'},
+    {label:'Wipe furniture undersides',      cat:'Bedrooms'},
+    {label:'Sweep / vacuum gym & utility',   cat:'Gym & Utility'},
+    {label:'Wipe down gym equipment',        cat:'Gym & Utility'},
+    {label:'Declutter / organize storage',   cat:'Gym & Utility'},
+];
+
+// Week-A base assignments: 0 = person 0, 1 = person 1
+// Even effective-week → Week A, odd → Week B (assignments flip)
+const BASE_ASSIGN = {
+    kitchen:0, guestBath:1, mainBath:0, livingDining:1,
+    familyRoom:0, offices:1, mainBedroom:0, guestStorage:1,
+};
+
+// ── Week / date helpers ──────────────────────────────────────────────────────
+
+function isoWeekNum(d = new Date()) {
+    const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const day = utc.getUTCDay() || 7;
+    utc.setUTCDate(utc.getUTCDate() + 4 - day);
+    const jan1 = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+    return Math.ceil((((utc - jan1) / 86400000) + 1) / 7);
+}
+
+function getWeekKey(d = new Date()) {
+    return `${d.getFullYear()}-W${String(isoWeekNum(d)).padStart(2,'0')}`;
+}
+
+function getTodayKey() {
+    return new Date().toISOString().slice(0,10);
+}
+
+function formatWeekBadge() {
+    const now = new Date();
+    const day = now.getDay() || 7;
+    const mon = new Date(now);
+    mon.setDate(now.getDate() - day + 1);
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    return `Week ${isoWeekNum()} · ${fmt(mon)} – ${fmt(sun)}`;
+}
+
+// ── State management ─────────────────────────────────────────────────────────
+
+const STORE_KEY = 'homeTracker_v1';
+
+function makeDefaultState() {
+    return {
+        version: 1,
+        settings: { p1:'Matt', p2:'Partner', weekOffset:0, deepCleanIdx:0 },
+        weeks: {}
+    };
+}
+
+function loadState() {
+    try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) {
+            const s = JSON.parse(raw);
+            if (s && s.version === 1) return s;
+        }
+    } catch(e) { /* corrupt storage – start fresh */ }
+    return makeDefaultState();
+}
+
+function save() {
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+
+function getWeekData() {
+    const wk = getWeekKey();
+    if (!state.weeks[wk]) {
+        const eff = isoWeekNum() + state.settings.weekOffset;
+        state.weeks[wk] = {
+            weeklyCompleted: [],
+            roomSwaps: [],
+            deepCleanDone: false,
+            daily: { date:'', person: eff % 2, completed:[] }
+        };
+        save();
+    }
+
+    const w = state.weeks[wk];
+    const today = getTodayKey();
+    if (w.daily.date !== today) {
+        // New day: cycle person based on day parity + week parity
+        const eff = isoWeekNum() + state.settings.weekOffset;
+        const dayParity = new Date().getDay() % 2;
+        w.daily = { date:today, person:(eff + dayParity) % 2, completed:[] };
+        save();
+    }
+    return w;
+}
+
+function getRoomOwner(roomId, weekData) {
+    const eff = isoWeekNum() + state.settings.weekOffset;
+    let person = BASE_ASSIGN[roomId];
+    if (eff % 2 !== 0) person = 1 - person;                        // week B flips
+    if (weekData.roomSwaps.includes(roomId)) person = 1 - person;  // manual swap
+    return person;
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+
+function render() {
+    const wk = getWeekData();
+    const { p1, p2 } = state.settings;
+
+    document.getElementById('nameBtn0').textContent = p1;
+    document.getElementById('nameBtn1').textContent = p2;
+    document.getElementById('weekBadge').textContent = formatWeekBadge();
+
+    renderDaily(wk, p1, p2);
+    renderWeekly(wk, p1, p2);
+    renderDeepClean(wk);
+    renderSummary(wk, p1, p2);
+}
+
+function renderDaily(wk, p1, p2) {
+    const pIdx = wk.daily.person;
+    const pName = pIdx === 0 ? p1 : p2;
+    const color = pIdx === 0 ? '#64b5f6' : '#81c784';
+
+    const nameEl = document.getElementById('dailyOwnerName');
+    nameEl.textContent = pName;
+    nameEl.style.color = color;
+
+    const done = wk.daily.completed;
+    let html = '';
+    DAILY_TASKS.forEach(t => {
+        const isDone = done.includes(t.id);
+        html += `<label class="task-item${isDone ? ' done' : ''}">
+            <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleDaily('${t.id}')">
+            <span class="task-label">${t.label}</span>
+        </label>`;
+    });
+    document.getElementById('dailyGrid').innerHTML = html;
+
+    const pct = DAILY_TASKS.length ? done.length / DAILY_TASKS.length * 100 : 0;
+    document.getElementById('dailyProgressFill').style.cssText = `width:${pct}%;background:${color}`;
+    document.getElementById('dailyProgressText').textContent = `${done.length} / ${DAILY_TASKS.length} done today`;
+}
+
+function renderWeekly(wk, p1, p2) {
+    const cols = document.getElementById('weeklyColumns');
+
+    const col0 = { pIdx:0, name:p1, color:'#64b5f6', rooms:[] };
+    const col1 = { pIdx:1, name:p2, color:'#81c784', rooms:[] };
+
+    ROOMS.forEach(room => {
+        (getRoomOwner(room.id, wk) === 0 ? col0 : col1).rooms.push(room);
+    });
+
+    cols.innerHTML = [col0, col1].map(col => {
+        let colDone = 0, colTotal = 0;
+
+        const roomCards = col.rooms.map(room => {
+            const rDone = room.tasks.filter(t => wk.weeklyCompleted.includes(t.id)).length;
+            const rTotal = room.tasks.length;
+            colDone += rDone;
+            colTotal += rTotal;
+            const rPct = rTotal ? rDone / rTotal * 100 : 0;
+
+            const taskHtml = room.tasks.map(t => {
+                const d = wk.weeklyCompleted.includes(t.id);
+                return `<label class="task-item${d ? ' done' : ''}">
+                    <input type="checkbox" ${d ? 'checked' : ''} onchange="toggleWeekly('${t.id}')">
+                    <span class="task-label">${t.label}</span>
+                </label>`;
+            }).join('');
+
+            return `<div class="room-card">
+                <div class="room-card-header">
+                    <span class="room-name">${room.icon} ${room.name}</span>
+                    <button class="btn btn-ghost" onclick="swapRoom('${room.id}')">Swap ↔</button>
+                </div>
+                <div>${taskHtml}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:${rPct}%;background:${col.color}"></div>
+                </div>
+            </div>`;
+        }).join('');
+
+        return `<div>
+            <div class="person-col-title col-title-${col.pIdx}">${col.name}'s Rooms</div>
+            ${roomCards}
+            <div class="progress-text">${colDone} / ${colTotal} tasks complete</div>
+        </div>`;
+    }).join('');
+}
+
+function renderDeepClean(wk) {
+    const idx = state.settings.deepCleanIdx % DEEP_CLEAN.length;
+    const task = DEEP_CLEAN[idx];
+    document.getElementById('deepCleanName').textContent = task.label;
+    document.getElementById('deepCleanCat').textContent = task.cat;
+    document.getElementById('deepCleanCheck').checked = wk.deepCleanDone;
+
+    const pct = (idx / DEEP_CLEAN.length) * 100;
+    document.getElementById('deepCleanFill').style.width = pct + '%';
+    document.getElementById('deepCleanText').textContent =
+        `Task ${idx + 1} of ${DEEP_CLEAN.length} in the rotation`;
+}
+
+function renderSummary(wk, p1, p2) {
+    const grid = document.getElementById('summaryGrid');
+    grid.innerHTML = [0, 1].map(pIdx => {
+        const pRooms = ROOMS.filter(r => getRoomOwner(r.id, wk) === pIdx);
+        const total = pRooms.reduce((s, r) => s + r.tasks.length, 0);
+        const done  = pRooms.reduce((s, r) => s + r.tasks.filter(t => wk.weeklyCompleted.includes(t.id)).length, 0);
+        const pct   = total ? Math.round(done / total * 100) : 0;
+        const pName = pIdx === 0 ? p1 : p2;
+        const color = pIdx === 0 ? '#64b5f6' : '#81c784';
+        return `<div class="summary-card">
+            <div class="summary-name" style="color:${color}">${pName}</div>
+            <div class="summary-pct" style="color:${color}">${pct}%</div>
+            <div class="summary-sub">${done} of ${total} tasks</div>
+            <div class="progress-bar" style="margin-top:10px">
+                <div class="progress-fill" style="width:${pct}%;background:${color}"></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Actions ──────────────────────────────────────────────────────────────────
+
+function editName(idx) {
+    const key = idx === 0 ? 'p1' : 'p2';
+    const val = prompt(`Name for Person ${idx + 1}:`, state.settings[key]);
+    if (val && val.trim()) {
+        state.settings[key] = val.trim();
+        save(); render();
+    }
+}
+
+function swapDailyPerson() {
+    const wk = getWeekData();
+    wk.daily.person = 1 - wk.daily.person;
+    save(); render();
+    showToast('Daily duty swapped');
+}
+
+function toggleDaily(taskId) {
+    const wk = getWeekData();
+    const arr = wk.daily.completed;
+    const i = arr.indexOf(taskId);
+    i === -1 ? arr.push(taskId) : arr.splice(i, 1);
+    save(); render();
+}
+
+function toggleWeekly(taskId) {
+    const wk = getWeekData();
+    const arr = wk.weeklyCompleted;
+    const i = arr.indexOf(taskId);
+    i === -1 ? arr.push(taskId) : arr.splice(i, 1);
+    save(); render();
+}
+
+function swapRoom(roomId) {
+    const wk = getWeekData();
+    const i = wk.roomSwaps.indexOf(roomId);
+    i === -1 ? wk.roomSwaps.push(roomId) : wk.roomSwaps.splice(i, 1);
+    save(); render();
+    showToast('Room reassigned');
+}
+
+function flipRotation() {
+    if (!confirm('Flip who gets which rooms each week? (Changes the base rotation permanently.)')) return;
+    state.settings.weekOffset = (state.settings.weekOffset + 1) % 2;
+    save(); render();
+    showToast('Rotation flipped');
+}
+
+function toggleDeepClean() {
+    const wk = getWeekData();
+    wk.deepCleanDone = document.getElementById('deepCleanCheck').checked;
+    save(); render();
+}
+
+function nextDeepClean() {
+    if (!confirm('Advance to the next deep clean task?')) return;
+    getWeekData().deepCleanDone = true;
+    state.settings.deepCleanIdx = (state.settings.deepCleanIdx + 1) % DEEP_CLEAN.length;
+    save(); render();
+    showToast('Deep clean advanced');
+}
+
+function resetWeek() {
+    if (!confirm('Clear all completions for this week and reset room swaps?')) return;
+    const wk = getWeekData();
+    wk.weeklyCompleted = [];
+    wk.roomSwaps = [];
+    wk.daily.completed = [];
+    wk.deepCleanDone = false;
+    save(); render();
+    showToast('Week reset');
+}
+
+// ── Cross-device sync ────────────────────────────────────────────────────────
+
+function exportState() {
+    const code = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+    navigator.clipboard.writeText(code).then(() => {
+        showToast('State code copied — paste it on the other device');
+    }).catch(() => {
+        document.getElementById('syncInput').value = code;
+        showToast('Code placed in the box below');
+    });
+}
+
+function importState() {
+    const code = document.getElementById('syncInput').value.trim();
+    if (!code) { showToast('Nothing to import'); return; }
+    try {
+        const imported = JSON.parse(decodeURIComponent(escape(atob(code))));
+        if (imported && imported.version === 1 && imported.settings && imported.weeks) {
+            state = imported;
+            save(); render();
+            document.getElementById('syncInput').value = '';
+            showToast('Imported successfully');
+        } else {
+            showToast('Unrecognised state format');
+        }
+    } catch(e) {
+        showToast('Could not decode — check the code and try again');
+    }
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+
+let _toastTimer;
+function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
