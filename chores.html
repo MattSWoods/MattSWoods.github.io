@@ -294,6 +294,99 @@
             margin-top: 3px;
         }
 
+        /* ── Deep clean list panel ───────────────────────────── */
+        .dc-list-panel {
+            display: none;
+            margin-top: 18px;
+            border-top: 1px solid rgba(255,183,77,0.15);
+            padding-top: 16px;
+        }
+        .dc-list-panel.open { display: block; }
+
+        .dc-list-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            margin-bottom: 3px;
+            border: 1px solid transparent;
+        }
+        .dc-list-row:hover { background: rgba(255,255,255,0.04); }
+        .dc-list-row.dc-current {
+            background: rgba(255,183,77,0.08);
+            border-color: rgba(255,183,77,0.25);
+        }
+
+        .dc-row-idx {
+            font-size: 0.7em;
+            color: rgba(255,255,255,0.2);
+            width: 22px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .dc-row-label {
+            flex: 1;
+            font-size: 0.83em;
+            color: rgba(255,255,255,0.75);
+            min-width: 0;
+        }
+        .dc-current .dc-row-label { color: #ffb74d; font-weight: 600; }
+
+        .dc-row-cat {
+            font-size: 0.7em;
+            color: rgba(255,255,255,0.28);
+            width: 108px;
+            flex-shrink: 0;
+        }
+
+        .dc-row-btns {
+            display: flex;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+
+        .btn-icon {
+            padding: 3px 7px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+            font-size: 0.78em;
+            background: transparent;
+            color: rgba(255,255,255,0.33);
+            font-family: inherit;
+            transition: all 0.15s;
+            line-height: 1.2;
+        }
+        .btn-icon:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+        .btn-icon:disabled { opacity: 0.22; cursor: default; pointer-events: none; }
+        .btn-icon.del:hover { background: rgba(239,83,80,0.12); color: #ef5350; border-color: rgba(239,83,80,0.2); }
+
+        .dc-add-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            flex-wrap: wrap;
+        }
+
+        .dc-add-input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 7px;
+            padding: 7px 11px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.82em;
+            font-family: inherit;
+            flex: 2;
+            min-width: 130px;
+        }
+        .dc-cat-input { flex: 1; min-width: 90px; }
+        .dc-add-input:focus { outline: none; border-color: rgba(255,183,77,0.45); }
+        .dc-add-input::placeholder { color: rgba(255,255,255,0.25); }
+
         /* ── Summary ─────────────────────────────────────────── */
         .summary-grid {
             display: grid;
@@ -453,7 +546,10 @@
     <div class="card">
         <div class="card-header">
             <span class="card-title card-title-amber">Deep Clean — This Week</span>
-            <button class="btn btn-amber" onclick="nextDeepClean()">Next Task →</button>
+            <div style="display:flex;gap:7px;align-items:center">
+                <button class="btn btn-ghost" id="dcListToggle" onclick="toggleDcList()">View All ▾</button>
+                <button class="btn btn-amber" onclick="nextDeepClean()">Next →</button>
+            </div>
         </div>
         <div class="deep-clean-row">
             <input type="checkbox" id="deepCleanCheck" onchange="toggleDeepClean()">
@@ -466,6 +562,18 @@
             <div class="progress-fill" id="deepCleanFill" style="background:#ffb74d"></div>
         </div>
         <div class="progress-text" id="deepCleanText"></div>
+
+        <!-- Expandable full list -->
+        <div class="dc-list-panel" id="dcListPanel">
+            <div id="dcListItems"></div>
+            <div class="dc-add-row">
+                <input type="text" class="dc-add-input" id="dcAddLabel" placeholder="New task name…"
+                       onkeydown="if(event.key==='Enter')dcAdd()">
+                <input type="text" class="dc-add-input dc-cat-input" id="dcAddCat" placeholder="Category"
+                       onkeydown="if(event.key==='Enter')dcAdd()">
+                <button class="btn btn-amber" onclick="dcAdd()">Add +</button>
+            </div>
+        </div>
     </div>
 
     <!-- Summary -->
@@ -642,6 +750,12 @@ function save() {
 
 let state = loadState();
 
+// Seed deep clean list into state if not yet persisted
+if (!state.settings.deepCleanList) {
+    state.settings.deepCleanList = DEEP_CLEAN.map(t => ({ label: t.label, cat: t.cat }));
+    save();
+}
+
 function getWeekData() {
     const wk = getWeekKey();
     if (!state.weeks[wk]) {
@@ -765,16 +879,88 @@ function renderWeekly(wk, p1, p2) {
 }
 
 function renderDeepClean(wk) {
-    const idx = state.settings.deepCleanIdx % DEEP_CLEAN.length;
-    const task = DEEP_CLEAN[idx];
+    const list = state.settings.deepCleanList;
+    const idx = list.length ? state.settings.deepCleanIdx % list.length : 0;
+    const task = list[idx] || { label: '—', cat: '' };
     document.getElementById('deepCleanName').textContent = task.label;
     document.getElementById('deepCleanCat').textContent = task.cat;
     document.getElementById('deepCleanCheck').checked = wk.deepCleanDone;
 
-    const pct = (idx / DEEP_CLEAN.length) * 100;
+    const pct = list.length ? (idx / list.length) * 100 : 0;
     document.getElementById('deepCleanFill').style.width = pct + '%';
     document.getElementById('deepCleanText').textContent =
-        `Task ${idx + 1} of ${DEEP_CLEAN.length} in the rotation`;
+        `Task ${idx + 1} of ${list.length} in the rotation`;
+
+    if (document.getElementById('dcListPanel').classList.contains('open')) {
+        renderDcList();
+    }
+}
+
+function renderDcList() {
+    const list = state.settings.deepCleanList;
+    const curIdx = list.length ? state.settings.deepCleanIdx % list.length : 0;
+    document.getElementById('dcListItems').innerHTML = list.map((t, i) =>
+        `<div class="dc-list-row${i === curIdx ? ' dc-current' : ''}">
+            <span class="dc-row-idx">${i + 1}</span>
+            <span class="dc-row-label">${escHtml(t.label)}${i === curIdx
+                ? '<span style="font-size:0.7em;margin-left:7px;opacity:0.55">◀ current</span>' : ''}</span>
+            <span class="dc-row-cat">${escHtml(t.cat)}</span>
+            <div class="dc-row-btns">
+                <button class="btn-icon" onclick="dcMove(${i},-1)" ${i === 0 ? 'disabled' : ''} title="Move up">↑</button>
+                <button class="btn-icon" onclick="dcMove(${i},1)" ${i === list.length - 1 ? 'disabled' : ''} title="Move down">↓</button>
+                <button class="btn-icon del" onclick="dcDelete(${i})" title="Remove">×</button>
+            </div>
+        </div>`
+    ).join('');
+}
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleDcList() {
+    const panel = document.getElementById('dcListPanel');
+    const btn   = document.getElementById('dcListToggle');
+    const open  = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide ▴' : 'View All ▾';
+    if (open) renderDcList();
+}
+
+function dcMove(idx, dir) {
+    const list = state.settings.deepCleanList;
+    const j = idx + dir;
+    if (j < 0 || j >= list.length) return;
+    const curIdx = state.settings.deepCleanIdx % list.length;
+    [list[idx], list[j]] = [list[j], list[idx]];
+    if (curIdx === idx) state.settings.deepCleanIdx = j;
+    else if (curIdx === j) state.settings.deepCleanIdx = idx;
+    save();
+    renderDcList();
+    renderDeepClean(getWeekData());
+}
+
+function dcDelete(idx) {
+    const list = state.settings.deepCleanList;
+    if (list.length <= 1) { showToast('Cannot delete the last task'); return; }
+    list.splice(idx, 1);
+    if (state.settings.deepCleanIdx >= list.length) state.settings.deepCleanIdx = 0;
+    save();
+    renderDcList();
+    renderDeepClean(getWeekData());
+    showToast('Task removed');
+}
+
+function dcAdd() {
+    const label = document.getElementById('dcAddLabel').value.trim();
+    const cat   = document.getElementById('dcAddCat').value.trim() || 'Other';
+    if (!label) { showToast('Enter a task name first'); return; }
+    state.settings.deepCleanList.push({ label, cat });
+    document.getElementById('dcAddLabel').value = '';
+    document.getElementById('dcAddCat').value = '';
+    save();
+    renderDcList();
+    renderDeepClean(getWeekData());
+    showToast('Task added');
 }
 
 function renderSummary(wk, p1, p2) {
@@ -855,7 +1041,8 @@ function toggleDeepClean() {
 function nextDeepClean() {
     if (!confirm('Advance to the next deep clean task?')) return;
     getWeekData().deepCleanDone = true;
-    state.settings.deepCleanIdx = (state.settings.deepCleanIdx + 1) % DEEP_CLEAN.length;
+    const len = state.settings.deepCleanList.length || 1;
+    state.settings.deepCleanIdx = (state.settings.deepCleanIdx + 1) % len;
     save(); render();
     showToast('Deep clean advanced');
 }
