@@ -188,19 +188,104 @@
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         }
 
-        .news-container {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            width: 100%;
+        .feed-list {
+            display: flex;
+            flex-direction: column;
         }
 
-        .news-container iframe {
+        .feed-item {
+            display: flex;
+            gap: 15px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+            color: inherit;
+            transition: opacity 0.2s ease;
+        }
+
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+
+        .feed-item:hover {
+            opacity: 0.8;
+        }
+
+        .feed-item-thumb {
+            width: 90px;
+            height: 90px;
             border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            max-width: 100%;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .feed-item-body {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .feed-item-title {
+            font-size: 1em;
+            font-weight: 600;
+            line-height: 1.35;
+        }
+
+        .feed-item-meta {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .feed-status {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9em;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .feed-item-extra {
+            display: none;
+        }
+
+        .feed-list.expanded .feed-item-extra {
+            display: flex;
+        }
+
+        .feed-show-more {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px 20px;
+            background: rgba(100, 181, 246, 0.2);
+            border: 1px solid rgba(100, 181, 246, 0.3);
+            border-radius: 8px;
+            color: #ffffff;
+            font-weight: 500;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .feed-show-more:hover {
+            background: rgba(100, 181, 246, 0.4);
+        }
+
+        .feed-show-more:focus {
+            outline: 2px solid #64b5f6;
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 480px) {
+            .feed-item-thumb {
+                width: 64px;
+                height: 64px;
+            }
+
+            .feed-item-title {
+                font-size: 0.92em;
+            }
         }
 
         .weather-links {
@@ -634,9 +719,9 @@
         
         <div class="main-content">
             <div class="news-section" style="margin-bottom: 25px;">
-                <h3 class="news-title">Live News Feed</h3>
-                <div class="news-container">
-                    <iframe width="100%" height="1600" src="https://rss.app/embed/v1/list/_akPGgAD5M25gxgc9" frameborder="0" title="Live RSS News Feed" loading="lazy"></iframe>
+                <h3 class="news-title">Southeast Idaho News</h3>
+                <div id="seIdahoFeed" class="feed-list" aria-live="polite">
+                    <div class="feed-status">Loading news…</div>
                 </div>
             </div>
             
@@ -688,6 +773,112 @@
                 behavior: 'smooth'
             });
         });
+
+        // Southeast Idaho news feed
+        const SE_IDAHO_FEED_URL = 'https://rss.app/feeds/_akPGgAD5M25gxgc9.xml';
+        const SE_IDAHO_MAX_ITEMS = 15;
+        const SE_IDAHO_VISIBLE_ITEMS = 3;
+        const SE_IDAHO_REFRESH_MS = 10 * 60 * 1000;
+
+        function formatRelativeTime(dateStr) {
+            const date = new Date(dateStr);
+            if (isNaN(date)) return '';
+            const diffMin = Math.round((Date.now() - date.getTime()) / 60000);
+            if (diffMin < 1) return 'just now';
+            if (diffMin < 60) return `${diffMin}m ago`;
+            const diffHr = Math.round(diffMin / 60);
+            if (diffHr < 24) return `${diffHr}h ago`;
+            return `${Math.round(diffHr / 24)}d ago`;
+        }
+
+        async function loadSeIdahoFeed() {
+            const container = document.getElementById('seIdahoFeed');
+            try {
+                const res = await fetch(SE_IDAHO_FEED_URL, { cache: 'no-store' });
+                if (!res.ok) throw new Error('Feed request failed: ' + res.status);
+
+                const xml = new DOMParser().parseFromString(await res.text(), 'text/xml');
+                if (xml.querySelector('parsererror')) throw new Error('Feed parse failed');
+
+                const items = Array.from(xml.querySelectorAll('item')).slice(0, SE_IDAHO_MAX_ITEMS);
+                if (!items.length) throw new Error('No items in feed');
+
+                const list = document.createElement('div');
+                list.className = 'feed-list';
+
+                items.forEach((item, index) => {
+                    const title = item.querySelector('title')?.textContent?.trim() || 'Untitled';
+                    const link = item.querySelector('link')?.textContent?.trim() || '#';
+                    const pubDate = item.querySelector('pubDate')?.textContent;
+
+                    let imageUrl = item.getElementsByTagName('media:content')[0]?.getAttribute('url');
+                    if (!imageUrl) {
+                        const description = item.querySelector('description')?.textContent || '';
+                        imageUrl = description.match(/<img[^>]+src="([^">]+)"/i)?.[1] || null;
+                    }
+
+                    const a = document.createElement('a');
+                    a.className = 'feed-item' + (index >= SE_IDAHO_VISIBLE_ITEMS ? ' feed-item-extra' : '');
+                    a.href = link;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.className = 'feed-item-thumb';
+                        img.src = imageUrl;
+                        img.alt = '';
+                        img.loading = 'lazy';
+                        a.appendChild(img);
+                    }
+
+                    const body = document.createElement('div');
+                    body.className = 'feed-item-body';
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'feed-item-title';
+                    titleEl.textContent = title;
+
+                    let source = '';
+                    try { source = new URL(link).hostname.replace(/^www\./, ''); } catch (e) {}
+
+                    const metaEl = document.createElement('div');
+                    metaEl.className = 'feed-item-meta';
+                    metaEl.textContent = [source, formatRelativeTime(pubDate)].filter(Boolean).join(' · ');
+
+                    body.appendChild(titleEl);
+                    body.appendChild(metaEl);
+                    a.appendChild(body);
+                    list.appendChild(a);
+                });
+
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(list);
+
+                if (items.length > SE_IDAHO_VISIBLE_ITEMS) {
+                    const showMoreBtn = document.createElement('button');
+                    showMoreBtn.type = 'button';
+                    showMoreBtn.className = 'feed-show-more';
+                    showMoreBtn.textContent = 'Show more';
+                    showMoreBtn.addEventListener('click', () => {
+                        const expanded = list.classList.toggle('expanded');
+                        showMoreBtn.textContent = expanded ? 'Show less' : 'Show more';
+                    });
+                    wrapper.appendChild(showMoreBtn);
+                }
+
+                container.replaceChildren(wrapper);
+            } catch (err) {
+                container.replaceChildren(Object.assign(document.createElement('div'), {
+                    className: 'feed-status',
+                    textContent: 'Unable to load Southeast Idaho news right now.'
+                }));
+                console.error('Southeast Idaho feed error:', err);
+            }
+        }
+
+        loadSeIdahoFeed();
+        setInterval(loadSeIdahoFeed, SE_IDAHO_REFRESH_MS);
     </script>
 </body>
 </html>
