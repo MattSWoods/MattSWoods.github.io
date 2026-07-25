@@ -36,18 +36,72 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .ticker-section {
+        .ticker-bar {
+            display: flex;
+            align-items: stretch;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            height: 60px;
+            height: 44px;
         }
 
-        .ticker-section iframe {
-            border-radius: 8px;
-            height: 60px !important;
-            display: block;
+        .ticker-label {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            background: var(--ticker-accent, #64b5f6);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.8em;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .ticker-track-wrap {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            min-width: 0;
+        }
+
+        .ticker-track {
+            display: inline-flex;
+            align-items: center;
+            height: 44px;
+            white-space: nowrap;
+            will-change: transform;
+            animation: ticker-scroll 40s linear infinite;
+        }
+
+        .ticker-track-wrap:hover .ticker-track {
+            animation-play-state: paused;
+        }
+
+        @keyframes ticker-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .ticker-item {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.88em;
+            opacity: 0.9;
+            margin-right: 36px;
+        }
+
+        .ticker-item:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .ticker-status {
+            padding: 0 16px;
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .container {
@@ -429,8 +483,17 @@
                 height: 50px;
             }
             
-            .ticker-section iframe {
-                height: 50px !important;
+            .ticker-bar {
+                height: 38px;
+            }
+
+            .ticker-track {
+                height: 38px;
+            }
+
+            .ticker-label {
+                padding: 0 12px;
+                font-size: 0.72em;
             }
         }
     </style>
@@ -438,11 +501,17 @@
 <body>
     <!-- Top ticker sections spanning full width -->
     <div class="ticker-top-container">
-        <div class="ticker-section">
-            <iframe width="100%" height="60" src="https://rss.app/embed/v1/ticker/t8ooplagDkQftUjr" frameborder="0" title="Market Ticker Feed" loading="lazy"></iframe>
+        <div class="ticker-bar" style="--ticker-accent: #e53935;">
+            <div class="ticker-label">World News</div>
+            <div class="ticker-track-wrap">
+                <div class="ticker-track" id="worldNewsTicker"><span class="ticker-status">Loading…</span></div>
+            </div>
         </div>
-        <div class="ticker-section">
-            <iframe width="100%" height="60" src="https://rss.app/embed/v1/ticker/tqQRHYQNDnTRmNOk" frameborder="0" title="News Ticker Feed" loading="lazy"></iframe>
+        <div class="ticker-bar" style="--ticker-accent: #43a047;">
+            <div class="ticker-label">Stock Market</div>
+            <div class="ticker-track-wrap">
+                <div class="ticker-track" id="stockMarketTicker"><span class="ticker-status">Loading…</span></div>
+            </div>
         </div>
     </div>
 
@@ -773,6 +842,59 @@
                 behavior: 'smooth'
             });
         });
+
+        // Top scrolling tickers (World News / Stock Market)
+        const TICKER_REFRESH_MS = 10 * 60 * 1000;
+        const TICKER_PX_PER_SEC = 60;
+        const TICKERS = [
+            { id: 'worldNewsTicker', widgetId: 't8ooplagDkQftUjr' },
+            { id: 'stockMarketTicker', widgetId: 'tqQRHYQNDnTRmNOk' }
+        ];
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        async function loadTicker(ticker) {
+            const track = document.getElementById(ticker.id);
+            try {
+                const res = await fetch(`https://rss.app/api/widget/ticker/${ticker.widgetId}`, { cache: 'no-store' });
+                if (!res.ok) throw new Error('Ticker request failed: ' + res.status);
+
+                const data = await res.json();
+                const items = data?.feed?.items || [];
+                if (!items.length) throw new Error('No items in ticker feed');
+
+                const itemsHtml = items.map(item => {
+                    const title = (item.title || '').trim();
+                    const url = item.url || '#';
+                    return `<a class="ticker-item" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`;
+                }).join('');
+
+                // Duplicate the items so the -50% scroll loop is seamless
+                track.innerHTML = itemsHtml + itemsHtml;
+                track.style.animation = 'none';
+                void track.offsetWidth;
+                const singleSetWidth = track.scrollWidth / 2;
+                const duration = Math.max(20, singleSetWidth / TICKER_PX_PER_SEC);
+                track.style.animation = `ticker-scroll ${duration}s linear infinite`;
+            } catch (err) {
+                track.replaceChildren(Object.assign(document.createElement('span'), {
+                    className: 'ticker-status',
+                    textContent: 'Unable to load feed right now.'
+                }));
+                console.error('Ticker error (' + ticker.widgetId + '):', err);
+            }
+        }
+
+        function loadAllTickers() {
+            TICKERS.forEach(loadTicker);
+        }
+
+        loadAllTickers();
+        setInterval(loadAllTickers, TICKER_REFRESH_MS);
 
         // Southeast Idaho news feed
         const SE_IDAHO_FEED_URL = 'https://rss.app/feeds/_akPGgAD5M25gxgc9.xml';
